@@ -202,6 +202,7 @@
 <script setup>
 import { ref, watch, nextTick, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import ragService from './services/ragApi.js'
 
 // RAG API配置
 const API_BASE_URL = 'http://58.198.176.133:5000/api'
@@ -234,66 +235,6 @@ const quickQuestions = ref([
 ])
 
 // RAG API 服务
-class RAGService {
-  async checkHealth() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/health`, {
-        timeout: 5000
-      })
-      const data = await response.json()
-      return {
-        healthy: data.status === 'healthy',
-        message: data.message
-      }
-    } catch (error) {
-      console.error('❌ RAG健康检查失败:', error)
-      return {
-        healthy: false,
-        message: `连接失败: ${error.message}`
-      }
-    }
-  }
-
-  async sendQuestion(prompt, strategy = 'merge') {
-    try {
-      console.log('🚀 发送问题到RAG服务:', prompt)
-
-      const response = await fetch(`${API_BASE_URL}/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt, strategy })
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const data = await response.json()
-      console.log('✅ 收到RAG回答:', data)
-
-      return data
-
-    } catch (error) {
-      console.error('❌ RAG API请求失败:', error)
-      throw error
-    }
-  }
-
-  async getStrategies() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/strategies`)
-      const data = await response.json()
-      return data.strategies
-    } catch (error) {
-      console.error('❌ 获取策略失败:', error)
-      return strategies.value
-    }
-  }
-}
-
-const ragService = new RAGService()
 
 // 检查RAG服务连接状态
 const checkConnection = async () => {
